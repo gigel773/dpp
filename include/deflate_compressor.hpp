@@ -1,15 +1,17 @@
-#ifndef DEFLATE___DEFLATE_COMPRESSOR_HPP
-#define DEFLATE___DEFLATE_COMPRESSOR_HPP
+#ifndef DPP_DEFLATE_COMPRESSOR_HPP
+#define DPP_DEFLATE_COMPRESSOR_HPP
 
-#include <compressors.hpp>
+#include "interfaces/compressor.hpp"
+#include "deflate_histogram.hpp"
 
-namespace compressors::deflate {
+namespace dpp::compressors::deflate {
 
     template<class ReturnType>
     class DeflateCompressor : public ICompressor<ReturnType> {
-
+    private:
+        dpp::tables::deflate::Histogram<uint8_t, std::vector<uint32_t>> m_histogram;
     };
 
 }
 
-#endif //DEFLATE___DEFLATE_COMPRESSOR_HPP
+#endif //DPP_DEFLATE_COMPRESSOR_HPP

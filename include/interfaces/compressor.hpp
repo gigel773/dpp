@@ -1,10 +1,10 @@
-#ifndef DEFLATE___COMPRESSORS_HPP
-#define DEFLATE___COMPRESSORS_HPP
+#ifndef DPP_COMPRESSORS_HPP
+#define DPP_COMPRESSORS_HPP
 
 #include <functional>
 #include <utility>
 
-namespace compressors {
+namespace dpp::compressors {
 
     template<class ReturnType>
     class ICompressor {
@@ -25,4 +25,4 @@ namespace compressors {
 
 }
 
-#endif //DEFLATE___COMPRESSORS_HPP
+#endif //DPP_COMPRESSORS_HPP
