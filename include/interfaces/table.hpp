@@ -13,7 +13,7 @@ namespace dpp::tables {
     public:
         virtual ITable &build() = 0;
 
-        const virtual Code get(const Symbol &symbol) = 0;
+        virtual Code get(const Symbol &symbol) = 0;
 
     private:
         std::unique_ptr<IStatistics<Symbol, std::vector<uint32_t>>> m_statisticService;

@@ -6,12 +6,12 @@
 
 namespace dpp::tables {
 
-    template<class Value, class Counter>
+    template<class Value, class StatisticsContainer>
     class IStatistics {
     public:
         virtual IStatistics &gather() = 0;
 
-        IStatistics &setCounter(const Counter &&counter) {
+        IStatistics &setCounter(const StatisticsContainer &&counter) {
             m_counter = counter;
 
             return *this;
@@ -24,7 +24,7 @@ namespace dpp::tables {
         }
 
     private:
-        Counter                m_counter;
+        StatisticsContainer    m_counter;
         std::unique_ptr<Value> m_source;
     };
 
