@@ -6,17 +6,16 @@
 #include <memory>
 #include "statistics.hpp"
 
-namespace dpp::tables {
+namespace dpp::tables
+{
 
     template<class Symbol, class Code>
-    class ITable {
+    class ITable
+    {
     public:
-        virtual ITable &build() = 0;
+        virtual ITable &build(std::unique_ptr<IStatistics<Symbol>> m_statisticService) = 0;
 
         virtual Code get(const Symbol &symbol) = 0;
-
-    private:
-        std::unique_ptr<IStatistics<Symbol, std::vector<uint32_t>>> m_statisticService;
     };
 
 }

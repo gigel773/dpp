@@ -22,6 +22,8 @@ namespace dpp::compressors
 
         virtual void compress() = 0;
 
+        virtual void setSource(uint8_t *source) = 0;
+
         ICompressor &setCallback(CallbackType callback)
         {
             m_callback = std::move(callback);

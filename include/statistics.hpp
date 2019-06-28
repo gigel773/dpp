@@ -6,8 +6,7 @@
 
 namespace dpp::tables
 {
-
-    template<class Value, class StatisticsContainer>
+    template<class Symbol>
     class IStatistics
     {
     public:
@@ -17,23 +16,7 @@ namespace dpp::tables
 
         virtual IStatistics &gather() = 0;
 
-        IStatistics &setCounter(const StatisticsContainer &&counter)
-        {
-            m_counter = counter;
-
-            return *this;
-        }
-
-        IStatistics &setSource(const std::unique_ptr<Value> &source)
-        {
-            m_source = source;
-
-            return *this;
-        }
-
-    private:
-        StatisticsContainer    m_counter;
-        std::unique_ptr<Value> m_source;
+        virtual uint32_t getSymbolFrequency(Symbol symbol) = 0;
     };
 
 }

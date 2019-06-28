@@ -8,10 +8,12 @@
 namespace dpp::tables::deflate
 {
 
-    class Histogram : public IStatistics<uint8_t, std::vector<uint32_t>>
+    class Histogram : public IStatistics<uint8_t>
     {
     public:
-        IStatistics<uint8_t, std::vector<uint32_t>> &gather() override;
+        IStatistics<uint8_t> &gather() override;
+
+        uint32_t getSymbolFrequency(uint8_t symbol) override;
     };
 }
 

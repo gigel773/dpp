@@ -11,7 +11,10 @@ namespace dpp::tables::deflate
     class HuffmanTable : public ITable<uint8_t, uint16_t>
     {
     public:
-        ITable<uint8_t, uint16_t> &build() override;
+
+        using StatisticsPtr = std::unique_ptr<IStatistics<uint8_t>>;
+
+        ITable<uint8_t, uint16_t> &build(StatisticsPtr m_statisticService) override;
 
         uint16_t get(const uint8_t &symbol) override;
 
