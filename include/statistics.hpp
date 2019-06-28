@@ -4,20 +4,28 @@
 #include <cstdint>
 #include <memory>
 
-namespace dpp::tables {
+namespace dpp::tables
+{
 
     template<class Value, class StatisticsContainer>
-    class IStatistics {
+    class IStatistics
+    {
     public:
+        IStatistics() = default;
+
+        virtual ~IStatistics() = default;
+
         virtual IStatistics &gather() = 0;
 
-        IStatistics &setCounter(const StatisticsContainer &&counter) {
+        IStatistics &setCounter(const StatisticsContainer &&counter)
+        {
             m_counter = counter;
 
             return *this;
         }
 
-        IStatistics &setSource(const std::unique_ptr<Value> &&source) {
+        IStatistics &setSource(const std::unique_ptr<Value> &source)
+        {
             m_source = source;
 
             return *this;

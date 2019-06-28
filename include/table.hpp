@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 #include <memory>
-#include "interfaces/statistics.hpp"
+#include "statistics.hpp"
 
 namespace dpp::tables {
 
