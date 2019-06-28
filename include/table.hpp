@@ -13,7 +13,9 @@ namespace dpp::tables
     class ITable
     {
     public:
-        virtual ITable &build(std::unique_ptr<IStatistics<Symbol>> m_statisticService) = 0;
+        virtual ITable &build(std::shared_ptr<IStatistics < Symbol>>
+
+        m_statisticService) = 0;
 
         virtual Code get(const Symbol &symbol) = 0;
     };

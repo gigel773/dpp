@@ -9,3 +9,8 @@ uint16_t dpp::tables::deflate::HuffmanTable::get(const uint8_t &symbol)
 {
     return m_table[symbol];
 }
+
+std::shared_ptr<dpp::tables::deflate::HuffmanTable> dpp::tables::deflate::getDeflateHuffmanTable()
+{
+    return std::make_shared<dpp::tables::deflate::HuffmanTable>();
+}
