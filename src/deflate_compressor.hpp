@@ -6,7 +6,6 @@
 
 namespace dpp::compressors::deflate
 {
-
     class DeflateCompressor : public ICompressor
     {
     public:
