@@ -1,40 +1,44 @@
 #include "deflate_compressor.hpp"
 #include "deflate_service.hpp"
 
-dpp::compressors::deflate::DeflateCompressor::DeflateCompressor() : m_source(nullptr)
+namespace dpp::compressors
 {
-    m_histogram = dpp::tables::deflate::getDeflateHistogram();
-    m_table     = dpp::tables::deflate::getDeflateHuffmanTable();
-}
 
-void dpp::compressors::deflate::DeflateCompressor::compress()
-{
-    // Variables
-    auto matchDiscoveryService = dpp::deflate::internal::IMatchDiscoveryService::getMatchDiscoveryService();
+    deflate::DeflateCompressor::DeflateCompressor() : m_source(nullptr)
+    {
+        m_histogram = dpp::tables::deflate::Histogram::getDeflateHistogram();
+        m_table     = dpp::tables::deflate::HuffmanTable::getDeflateHuffmanTable();
+    }
 
-    // Gather statistics and build Huffman table
-    m_histogram->gather(m_source);
-    m_table->build(m_histogram);
+    void deflate::DeflateCompressor::compress()
+    {
+        // Variables
+        auto matchDiscoveryService = deflate::internal::IMatchDiscoveryService::getMatchDiscoveryService();
 
-    // Encode input source
-    dpp::deflate::internal::deflatePass(m_source,
-                                        matchDiscoveryService,
-                                        [](uint8_t symbol) -> void
-                                        {
-                                            // Symbol encoding actions
-                                        },
-                                        [](dpp::deflate::internal::Match match) -> void
-                                        {
-                                            // Match encoding actions
-                                        });
-}
+        // Gather statistics and build Huffman table
+        m_histogram->gather(m_source);
+        m_table->build(m_histogram);
 
-void dpp::compressors::deflate::DeflateCompressor::setSource(uint8_t *source)
-{
-    m_source = source;
-}
+        // Encode input source
+        deflate::internal::deflatePass(m_source,
+                                       matchDiscoveryService,
+                                       [](uint8_t symbol)
+                                       {
+                                           // Symbol encoding actions
+                                       },
+                                       [](deflate::internal::Match match)
+                                       {
+                                           // Match encoding actions
+                                       });
+    }
 
-dpp::compressors::ICompressor::CompressorPtr dpp::compressors::getDeflateCompressor()
-{
-    return std::make_shared<dpp::compressors::deflate::DeflateCompressor>();
+    void deflate::DeflateCompressor::setSource(uint8_t *source)
+    {
+        m_source = source;
+    }
+
+    ICompressor::CompressorPtr getDeflateCompressor()
+    {
+        return std::make_shared<deflate::DeflateCompressor>();
+    }
 }

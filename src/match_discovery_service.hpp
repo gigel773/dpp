@@ -1,12 +1,7 @@
-//
-// Created by Марк Лемешевский on 2019-06-29.
-//
-
 #ifndef DPP_MATCH_DISCOVERY_SERVICE_HPP
 #define DPP_MATCH_DISCOVERY_SERVICE_HPP
 
-
-namespace dpp::deflate::internal
+namespace dpp::compressors::deflate::internal
 {
     class IMatchDiscoveryService
     {
@@ -14,6 +9,5 @@ namespace dpp::deflate::internal
         static IMatchDiscoveryService getMatchDiscoveryService();
     };
 }
-
 
 #endif //DPP_MATCH_DISCOVERY_SERVICE_HPP

@@ -10,8 +10,8 @@ namespace dpp::compressors::deflate
     class DeflateCompressor : public ICompressor
     {
     public:
-        using HistogramPtr = std::shared_ptr<dpp::tables::deflate::Histogram>;
-        using TablePtr = std::shared_ptr<dpp::tables::deflate::HuffmanTable>;
+        using HistogramPtr = dpp::tables::deflate::Histogram::Ptr;
+        using TablePtr = dpp::tables::deflate::HuffmanTable::Ptr;
 
         DeflateCompressor();
 

@@ -1,16 +1,20 @@
 #include "deflate_histogram.hpp"
 
-dpp::tables::IStatistics<uint8_t> &dpp::tables::deflate::Histogram::gather(uint8_t *source)
+namespace dpp::tables
 {
-    return *this;
-}
 
-uint32_t dpp::tables::deflate::Histogram::getSymbolFrequency(uint8_t symbol)
-{
-    return 0;
-}
+    dpp::tables::IStatistics<uint8_t> &deflate::Histogram::gather(uint8_t *source)
+    {
+        return *this;
+    }
 
-std::shared_ptr<dpp::tables::deflate::Histogram> dpp::tables::deflate::getDeflateHistogram()
-{
-    return std::make_shared<dpp::tables::deflate::Histogram>();
+    uint32_t deflate::Histogram::getSymbolFrequency(uint8_t symbol)
+    {
+        return 0;
+    }
+
+    deflate::Histogram::Ptr deflate::Histogram::getDeflateHistogram()
+    {
+        return std::make_shared<dpp::tables::deflate::Histogram>();
+    }
 }
