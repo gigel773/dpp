@@ -1,13 +1,17 @@
 #include "match_discovery_service.hpp"
 
-class MatchDiscoveryService : public dpp::deflate::internal::IMatchDiscoveryService
+namespace dpp::compressors::deflate::internal
 {
 
-};
+    class MatchDiscoveryService : public IMatchDiscoveryService
+    {
 
-dpp::deflate::internal::IMatchDiscoveryService
-dpp::deflate::internal::IMatchDiscoveryService::getMatchDiscoveryService()
-{
-    MatchDiscoveryService matchDiscoveryService;
-    return matchDiscoveryService;
+    };
+
+    IMatchDiscoveryService IMatchDiscoveryService::getMatchDiscoveryService()
+    {
+        MatchDiscoveryService matchDiscoveryService;
+        return matchDiscoveryService;
+    }
+
 }

@@ -6,7 +6,7 @@
 #define DPP_MATCH_DISCOVERY_SERVICE_HPP
 
 
-namespace dpp::deflate::internal
+namespace dpp::compressors::deflate::internal
 {
     class IMatchDiscoveryService
     {

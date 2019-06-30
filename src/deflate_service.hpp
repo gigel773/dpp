@@ -3,7 +3,7 @@
 
 #include "match_discovery_service.hpp"
 
-namespace dpp::deflate::internal
+namespace dpp::compressors::deflate::internal
 {
     struct Match
     {
