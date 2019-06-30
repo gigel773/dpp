@@ -4,7 +4,9 @@
 namespace dpp::compressors
 {
 
-    deflate::DeflateCompressor::DeflateCompressor() : m_source(nullptr)
+    deflate::DeflateCompressor::DeflateCompressor() :
+            m_source(nullptr),
+            m_sourceSize(0)
     {
         m_histogram = dpp::tables::deflate::Histogram::getDeflateHistogram();
         m_table     = dpp::tables::deflate::HuffmanTable::getDeflateHuffmanTable();
@@ -21,6 +23,7 @@ namespace dpp::compressors
 
         // Encode input source
         deflate::internal::deflatePass(m_source,
+                                       m_sourceSize,
                                        matchDiscoveryService,
                                        [](uint8_t symbol)
                                        {
@@ -32,9 +35,10 @@ namespace dpp::compressors
                                        });
     }
 
-    void deflate::DeflateCompressor::setSource(uint8_t *source)
+    void deflate::DeflateCompressor::setSource(uint8_t *source, uint32_t sourceSize)
     {
-        m_source = source;
+        m_source     = source;
+        m_sourceSize = sourceSize;
     }
 
     ICompressor::CompressorPtr getDeflateCompressor()

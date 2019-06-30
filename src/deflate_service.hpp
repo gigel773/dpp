@@ -5,23 +5,38 @@
 
 namespace dpp::compressors::deflate::internal
 {
-    struct Match
-    {
-        uint32_t length;
-        uint32_t offset;
-        uint32_t index;
-    };
-
     template<typename MatchDiscoveryService, typename LiteralsHandler, typename MatchHandler>
-    void deflatePass(uint8_t *source,
-                     MatchDiscoveryService matchDiscoveryService,
-                     LiteralsHandler literalsHandler,
-                     MatchHandler matchHandler)
+    void deflatePass(const uint8_t *const source,
+                     const uint32_t sourceSize,
+                     const MatchDiscoveryService matchDiscoveryService,
+                     const LiteralsHandler literalsHandler,
+                     const MatchHandler matchHandler)
     {
         // Check correctness of the passed parameters
-        static_assert(std::is_base_of<IMatchDiscoveryService, MatchDiscoveryService>());
+        static_assert(std::is_base_of<IMatchDiscoveryService::Ptr, MatchDiscoveryService>());
         static_assert(std::is_invocable<decltype(literalsHandler), uint8_t>::value);
         static_assert(std::is_invocable<decltype(matchHandler), Match>::value);
+
+        // Variables
+        const uint8_t *const lowerBound = source;
+        const uint8_t *current = source;
+        const uint8_t *const upperBound = source + sourceSize;
+
+        // Main deflate pass routine
+        while (current < upperBound)
+        {
+            auto match = matchDiscoveryService->getBestMatch(current);
+
+            if (match.isMatch())
+            {
+                matchHandler(match);
+                current += match.length;
+            } else
+            {
+                literalsHandler(*current);
+                current++;
+            }
+        }
     }
 }
 

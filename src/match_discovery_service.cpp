@@ -5,13 +5,18 @@ namespace dpp::compressors::deflate::internal
 
     class MatchDiscoveryService : public IMatchDiscoveryService
     {
+    public:
+        MatchDiscoveryService() = default;
 
+        Match getBestMatch(const uint8_t *string) override
+        {
+            return Match();
+        }
     };
 
-    IMatchDiscoveryService IMatchDiscoveryService::getMatchDiscoveryService()
+    IMatchDiscoveryService::Ptr IMatchDiscoveryService::getMatchDiscoveryService()
     {
-        MatchDiscoveryService matchDiscoveryService;
-        return matchDiscoveryService;
+        return std::make_shared<MatchDiscoveryService>();
     }
 
 }

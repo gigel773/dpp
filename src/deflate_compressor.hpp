@@ -17,12 +17,13 @@ namespace dpp::compressors::deflate
 
         void compress() override;
 
-        void setSource(uint8_t *source) override;
+        void setSource(uint8_t *source, uint32_t sourceSize) override;
 
     private:
         HistogramPtr m_histogram;
         TablePtr     m_table;
         uint8_t      *m_source;
+        uint32_t     m_sourceSize;
     };
 }
 
