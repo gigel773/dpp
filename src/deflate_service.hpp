@@ -22,6 +22,8 @@ namespace dpp::compressors::deflate::internal
         const uint8_t *current = source;
         const uint8_t *const upperBound = source + sourceSize;
 
+        matchDiscoveryService->setBounds(lowerBound, upperBound);
+
         // Main deflate pass routine
         while (current < upperBound)
         {

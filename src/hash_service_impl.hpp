@@ -10,7 +10,9 @@ namespace dpp::compressors::deflate::internal
     class HashCrc32 : public IHashService<uint32_t, uint8_t>
     {
     public:
-        uint32_t calculate(uint8_t *data) override;
+        using Ptr = IHashService<uint32_t, uint8_t>::Ptr;
+
+        uint32_t calculate(const uint8_t *data) override;
     };
 
 }

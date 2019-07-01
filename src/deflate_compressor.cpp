@@ -1,5 +1,6 @@
 #include "deflate_compressor.hpp"
 #include "deflate_service.hpp"
+#include "hash_table.hpp"
 
 namespace dpp::compressors
 {
@@ -16,10 +17,16 @@ namespace dpp::compressors
     {
         // Variables
         auto matchDiscoveryService = deflate::internal::IMatchDiscoveryService::getMatchDiscoveryService();
+        auto hashService           = deflate::internal::IHashService<uint32_t, uint8_t>::getHashCrc32Service();
+        auto hashTable             = tables::deflate::internal::IHashTable<uint32_t, uint32_t>::getDefaultHashTable();
 
         // Gather statistics and build Huffman table
         m_histogram->gather(m_source);
         m_table->build(m_histogram);
+
+        // Configure match discovery service
+        matchDiscoveryService->setHashService(hashService);
+        matchDiscoveryService->setHashTable(hashTable);
 
         // Encode input source
         deflate::internal::deflatePass(m_source,
