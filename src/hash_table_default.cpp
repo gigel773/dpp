@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "hash_table_default.hpp"
 
 namespace dpp::tables::deflate::internal
@@ -6,7 +8,7 @@ namespace dpp::tables::deflate::internal
             : m_hashTable(),
               m_mask(DEFAULT_HASH_TABLE_MASK)
     {
-        // Empty constructor
+        memset(m_hashTable, UNINITIALIZED_INDEX, DEFAULT_HASH_TABLE_SIZE);
     }
 
     uint32_t HashTableDefault::get(const uint32_t &value)

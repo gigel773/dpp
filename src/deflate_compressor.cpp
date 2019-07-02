@@ -2,6 +2,8 @@
 #include "deflate_service.hpp"
 #include "hash_table.hpp"
 
+#include <iostream>
+
 namespace dpp::compressors
 {
 
@@ -34,11 +36,11 @@ namespace dpp::compressors
                                        matchDiscoveryService,
                                        [](uint8_t symbol)
                                        {
-                                           // Symbol encoding actions
+                                           std::cout << "Literal: " << symbol << "\n";
                                        },
                                        [](deflate::internal::Match match)
                                        {
-                                           // Match encoding actions
+                                           std::cout << "Match length: " << match.length << "\n";
                                        });
     }
 

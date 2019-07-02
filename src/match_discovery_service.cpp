@@ -10,8 +10,14 @@ namespace dpp::compressors::deflate::internal
         // Variables
         uint32_t matchLength = 0;
 
+        if (src1 > src2)
+        {
+            return 0;
+        }
+
         // Main cycle
         while (src1[matchLength] == src2[matchLength] &&
+               src1 + matchLength < src2 &&
                matchLength <= maxLength)
         {
             matchLength++;
@@ -29,7 +35,14 @@ namespace dpp::compressors::deflate::internal
         {
             auto hash           = m_hashService->calculate(string);
             auto candidateIndex = m_hashTable->get(hash);
-            auto matchLength    = compareStrings(string, m_lowerBound + candidateIndex, 258);
+
+            if (candidateIndex == dpp::tables::deflate::internal::UNINITIALIZED_INDEX)
+            {
+                return Match(0, 0, candidateIndex);
+            }
+
+            auto matchLength = compareStrings(m_lowerBound + candidateIndex, string, 258);
+            m_hashTable->update(string - m_lowerBound, hash);
 
             return Match(matchLength, string - m_lowerBound + candidateIndex, candidateIndex);
         }
@@ -44,7 +57,7 @@ namespace dpp::compressors::deflate::internal
     {
         m_hashService = hashService;
     }
-    
+
     void IMatchDiscoveryService::setHashTable(const IMatchDiscoveryService::HashTable::Ptr &hashTable)
     {
         m_hashTable = hashTable;

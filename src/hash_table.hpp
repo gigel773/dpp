@@ -6,6 +6,8 @@
 namespace dpp::tables::deflate::internal
 {
 
+    constexpr uint32_t UNINITIALIZED_INDEX = 0xFFFFFFFF;
+
     template<class IndexType, class ValueType>
     class IHashTable
     {
