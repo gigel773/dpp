@@ -44,8 +44,7 @@ namespace dpp::compressors::deflate::internal
     {
         m_hashService = hashService;
     }
-
-
+    
     void IMatchDiscoveryService::setHashTable(const IMatchDiscoveryService::HashTable::Ptr &hashTable)
     {
         m_hashTable = hashTable;

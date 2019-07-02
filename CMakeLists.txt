@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(dpp)
 
+add_subdirectory(tests)
+
 file(GLOB SOURCES src/*.cpp)
 
 add_library(dpp ${SOURCES} include/table.hpp)
