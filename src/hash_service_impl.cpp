@@ -1,10 +1,12 @@
+#include <immintrin.h>
+
 #include "hash_service_impl.hpp"
 
 namespace dpp::compressors::deflate::internal
 {
     uint32_t HashCrc32::calculate(const uint8_t *data)
     {
-        return 0;
+        return _mm_crc32_u32(*reinterpret_cast<const uint32_t *>(data), 0);
     }
 
     template<>

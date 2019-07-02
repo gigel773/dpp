@@ -3,11 +3,11 @@
 
 #include <functional>
 #include <utility>
+#include <memory>
 
 namespace dpp::compressors
 {
-
-    constexpr uint32_t defaultWindowSize = 32768u;
+    constexpr uint32_t DEFAULT_WINDOW_SIZE = 32768u;
 
     class ICompressor
     {
@@ -15,7 +15,7 @@ namespace dpp::compressors
         using CallbackType = std::function<void(const ICompressor &)>;
         using CompressorPtr = std::shared_ptr<ICompressor>;
 
-        ICompressor() : m_windowSize(defaultWindowSize)
+        ICompressor() : m_windowSize(DEFAULT_WINDOW_SIZE)
         {
             // Empty default constructor
         }
