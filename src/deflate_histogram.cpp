@@ -3,7 +3,7 @@
 namespace dpp::tables
 {
 
-    dpp::tables::IStatistics<uint8_t> &deflate::Histogram::gather(uint8_t *source)
+    dpp::tables::IStatistics<uint8_t> &deflate::Histogram::gather(const uint8_t *source)
     {
         return *this;
     }

@@ -5,19 +5,27 @@
 
 #include <compressor.hpp>
 
-constexpr char testFilePath[] = "../testdata/bib";
+constexpr char testFilePath[] = R"(..\..\testdata\bib)";
 
 int main()
 {
     auto          deflateCompressor = dpp::compressors::getDeflateCompressor();
-    std::ifstream file(testFilePath);
-    auto          finishPosition    = file.tellg();
-    auto          content           = std::make_unique<char[]>(static_cast<uint32_t >(finishPosition));
+    std::ifstream file(testFilePath, std::ifstream::binary);
+    std::string   result;
 
+    if (!file.is_open())
+    {
+        return 1;
+    }
+
+    file.seekg(0, std::ios::end);
+    result.reserve(static_cast<unsigned int>(file.tellg()));
     file.seekg(0, std::ios::beg);
-    file.read(content.get(), finishPosition);
 
-    deflateCompressor->setSource(reinterpret_cast<uint8_t *>(content.get()), finishPosition);
+    result.assign(std::istreambuf_iterator<char>(file),
+                  std::istreambuf_iterator<char>());
+
+    deflateCompressor->setSource(reinterpret_cast<const uint8_t *>(result.c_str()), result.length());
     deflateCompressor->compress();
 
     return 0;

@@ -13,7 +13,7 @@ namespace dpp::tables::deflate
     public:
         using Ptr =std::shared_ptr<Histogram>;
 
-        IStatistics<uint8_t> &gather(uint8_t *source) override;
+        IStatistics<uint8_t> &gather(const uint8_t *source) override;
 
         uint32_t getSymbolFrequency(uint8_t symbol) override;
 

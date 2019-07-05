@@ -44,7 +44,7 @@ namespace dpp::compressors
                                        });
     }
 
-    void deflate::DeflateCompressor::setSource(uint8_t *source, uint32_t sourceSize)
+    void deflate::DeflateCompressor::setSource(const uint8_t *source, uint32_t sourceSize)
     {
         m_source     = source;
         m_sourceSize = sourceSize;

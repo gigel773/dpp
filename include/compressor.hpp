@@ -22,7 +22,7 @@ namespace dpp::compressors
 
         virtual void compress() = 0;
 
-        virtual void setSource(uint8_t *source, uint32_t sourceSize) = 0;
+        virtual void setSource(const uint8_t *source, uint32_t sourceSize) = 0;
 
         ICompressor &setCallback(CallbackType callback)
         {

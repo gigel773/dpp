@@ -13,7 +13,7 @@ namespace dpp::tables::deflate::internal
 
     uint32_t HashTableDefault::get(const uint32_t &value)
     {
-        return m_hashTable[value] & m_mask;
+        return m_hashTable[value & m_mask];
     }
 
     void HashTableDefault::update(const uint32_t &index, const uint32_t &value)
