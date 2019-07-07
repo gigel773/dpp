@@ -14,7 +14,7 @@ namespace dpp::tables
 
         virtual ~IStatistics() = default;
 
-        virtual IStatistics &gather(const Symbol *source) = 0;
+        virtual IStatistics &gather(const Symbol *source, uint32_t sourceSize) = 0;
 
         virtual uint32_t getSymbolFrequency(Symbol symbol) = 0;
     };

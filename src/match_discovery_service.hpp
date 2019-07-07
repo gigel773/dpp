@@ -9,7 +9,8 @@
 
 namespace dpp::compressors::deflate::internal
 {
-    constexpr uint32_t minimalMatchLength = 4;
+    constexpr uint32_t MINIMAL_MATCH_LENGTH = 4;
+    constexpr uint32_t MAXIMAL_OFFSET       = 32768;
 
     struct Match
     {
@@ -17,18 +18,13 @@ namespace dpp::compressors::deflate::internal
         uint32_t offset;
         uint32_t index;
 
-        Match(uint32_t length, uint32_t offset, uint32_t index)
-                : length(length),
-                  offset(offset),
-                  index(index)
-        {
-            // Empty constructor
-        }
+        Match(uint32_t length, uint32_t offset, uint32_t index);
 
-        bool isMatch()
-        {
-            return length >= minimalMatchLength;
-        }
+        bool isMatch();
+
+        uint32_t getLengthIndex() const;
+
+        uint32_t getOffsetIndex() const;
     };
 
     class IMatchDiscoveryService

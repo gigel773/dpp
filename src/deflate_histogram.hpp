@@ -8,16 +8,22 @@
 namespace dpp::tables::deflate
 {
 
-    class Histogram : public IStatistics<uint8_t>
+    class Histogram final : public IStatistics<uint8_t>
     {
     public:
         using Ptr =std::shared_ptr<Histogram>;
 
-        IStatistics<uint8_t> &gather(const uint8_t *source) override;
+        Histogram();
+
+        IStatistics<uint8_t> &gather(const uint8_t *source, uint32_t sourceSize) override;
 
         uint32_t getSymbolFrequency(uint8_t symbol) override;
 
         static Ptr getDeflateHistogram();
+
+    private:
+        std::vector<uint32_t> m_literalsMatchLengthsTable;
+        std::vector<uint32_t> m_offsetsTable;
     };
 }
 

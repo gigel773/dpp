@@ -2,8 +2,6 @@
 #include "deflate_service.hpp"
 #include "hash_table.hpp"
 
-#include <iostream>
-
 namespace dpp::compressors
 {
 
@@ -23,7 +21,7 @@ namespace dpp::compressors
         auto hashTable             = tables::deflate::internal::IHashTable<uint32_t, uint32_t>::getDefaultHashTable();
 
         // Gather statistics and build Huffman table
-        m_histogram->gather(m_source);
+        m_histogram->gather(m_source, m_sourceSize);
         m_table->build(m_histogram);
 
         // Configure match discovery service
@@ -35,13 +33,9 @@ namespace dpp::compressors
                                        m_sourceSize,
                                        matchDiscoveryService,
                                        [](uint8_t symbol)
-                                       {
-                                           std::cout << "Literal: " << symbol << "\n";
-                                       },
+                                       {},
                                        [](deflate::internal::Match match)
-                                       {
-                                           std::cout << "Match length: " << match.length << "\n";
-                                       });
+                                       {});
     }
 
     void deflate::DeflateCompressor::setSource(const uint8_t *source, uint32_t sourceSize)
