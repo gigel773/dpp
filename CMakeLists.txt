@@ -6,7 +6,7 @@ add_subdirectory(contrib/zlib)
 
 file(GLOB SOURCES src/*.cpp)
 
-add_library(dpp ${SOURCES} include/table.hpp)
+add_library(dpp ${SOURCES} include/table.hpp src/huffman_coding.cpp src/huffman_coding.hpp)
 
 target_include_directories(dpp PUBLIC include)
 
