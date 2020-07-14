@@ -73,8 +73,7 @@ namespace dpp::huff
                 tree[i].right_child = -1;
                 tree[i].left_child  = -1;
 
-                *heap_next_position = i;
-                heap_next_position++;
+                *heap_next_position++ = i;
             }
 
             auto heap_end = heap_next_position;
