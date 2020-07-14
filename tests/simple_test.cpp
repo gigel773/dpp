@@ -3,13 +3,16 @@
 #include <vector>
 #include <memory>
 
-#include <compressor.hpp>
+#include <dpp.hpp>
 
+#if WIN32
 constexpr char testFilePath[] = R"(..\..\testdata\bib)";
+#else
+constexpr char testFilePath[] = R"(../../testdata/bib)";
+#endif
 
 int main()
 {
-    auto          deflateCompressor = dpp::compressors::getDeflateCompressor();
     std::ifstream file(testFilePath, std::ifstream::binary);
     std::string   result;
 
@@ -25,8 +28,27 @@ int main()
     result.assign(std::istreambuf_iterator<char>(file),
                   std::istreambuf_iterator<char>());
 
-    deflateCompressor->setSource(reinterpret_cast<const uint8_t *>(result.c_str()), result.length());
-    deflateCompressor->compress();
+    std::array<int16_t, dpp::huff::MAX_ALPHABET_SIZE>         histogram{};
+    std::array<dpp::huff::code, dpp::huff::MAX_ALPHABET_SIZE> alphabet{};
+
+    for (auto c : result)
+    {
+        histogram[c]++;
+    }
+
+    dpp::huff::build_huffman_alphabet(histogram, alphabet);
+
+    uint32_t bit_length = 0;
+
+    for (auto c : result)
+    {
+        bit_length += alphabet[c].code_length;
+    }
+
+    uint32_t byte_length = (bit_length / 8) + (bit_length % 8 ? 1 : 0);
+
+    std::cout << "Resulted byte length: " << byte_length << "\n";
+    std::cout << "Compression ratio: " << (float) result.size() / (float) byte_length << "\n";
 
     return 0;
 }
