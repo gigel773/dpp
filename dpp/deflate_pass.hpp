@@ -5,6 +5,8 @@
 #include <array>
 #include <immintrin.h>
 
+#include "huffman_coding.hpp"
+
 namespace dpp
 {
     constexpr const uint32_t MINIMAL_MATCH_LENGTH = 4;
@@ -71,10 +73,10 @@ namespace dpp
                  const output_iterator_t &dst_end)
     {
         // Variables
-        auto                      current_byte = src_begin;
-        hash_table_t              hash_table{};
-        std::array<uint32_t, 286> literals_matches_histogram{};
-        std::array<uint32_t, 30>  offsets_histogram{};
+        auto                     current_byte = src_begin;
+        hash_table_t             hash_table{};
+        std::array<int16_t, 286> literals_matches_histogram{};
+        std::array<int16_t, 30>  offsets_histogram{};
 
         while (current_byte < src_end - MINIMAL_MATCH_LENGTH)
         {
@@ -112,6 +114,14 @@ namespace dpp
         {
             literals_matches_histogram[*symbol]++;
         }
+
+        // Build tables
+        std::array<huff::code, literals_matches_histogram.size()> literals_matches_alphabet{};
+        std::array<huff::code, offsets_histogram.size()>          offsets_alphabet{};
+
+        huff::build_huffman_alphabet<huff::LITERALS_MATCH_LENGTHS_TABLE_SIZE>(literals_matches_histogram,
+                                                                              literals_matches_alphabet);
+        huff::build_huffman_alphabet<huff::OFFSETS_TABLE_SIZE>(offsets_histogram, offsets_alphabet);
     }
 }
 

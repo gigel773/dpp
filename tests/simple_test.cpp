@@ -31,7 +31,10 @@ int main()
 
     std::vector<uint8_t> destination(result.size(), 0);
 
-    dpp::deflate(std::begin(result), std::end(result), std::begin(destination), std::end(destination));
+    dpp::deflate(std::begin(result),
+                 std::end(result),
+                 std::begin(destination),
+                 std::end(destination));
 
     return 0;
 }

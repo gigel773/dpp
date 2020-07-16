@@ -8,10 +8,11 @@ namespace dpp::huff
 {
     namespace internal
     {
-        static inline auto calculate_code_length(const std::array<tree_h_node, MAX_ALPHABET_SIZE * 2> &tree,
+        template<uint32_t table_size_t>
+        static inline auto calculate_code_length(const std::array<tree_h_node, table_size_t * 2> &tree,
                                                  const int16_t node_idx,
                                                  const uint8_t current_length,
-                                                 std::array<code, MAX_ALPHABET_SIZE> &huffman_alphabet) -> void
+                                                 std::array<code, table_size_t> &huffman_alphabet) -> void
         {
             const auto &node = tree[node_idx];
 
@@ -22,47 +23,49 @@ namespace dpp::huff
 
             if (node.left_child != -1)
             {
-                calculate_code_length(tree, node.left_child, current_length + 1, huffman_alphabet);
+                calculate_code_length<table_size_t>(tree, node.left_child, current_length + 1, huffman_alphabet);
             }
 
             if (node.right_child != -1)
             {
-                calculate_code_length(tree, node.right_child, current_length + 1, huffman_alphabet);
+                calculate_code_length<table_size_t>(tree, node.right_child, current_length + 1, huffman_alphabet);
             }
         }
 
-        static inline auto calculate_code_lengths(const std::array<tree_h_node, MAX_ALPHABET_SIZE * 2> &tree,
+        template<uint32_t table_size_t>
+        static inline auto calculate_code_lengths(const std::array<tree_h_node, table_size_t * 2> &tree,
                                                   int16_t root_node,
-                                                  std::array<code, MAX_ALPHABET_SIZE> &huffman_alphabet)
+                                                  std::array<code, table_size_t> &huffman_alphabet)
         {
             const auto &node = tree[root_node];
 
             if (node.left_child != -1)
             {
-                internal::calculate_code_length(tree, node.left_child, 1, huffman_alphabet);
+                internal::calculate_code_length<table_size_t>(tree, node.left_child, 1, huffman_alphabet);
             }
 
             if (node.right_child != -1)
             {
-                internal::calculate_code_length(tree, node.right_child, 1, huffman_alphabet);
+                internal::calculate_code_length<table_size_t>(tree, node.right_child, 1, huffman_alphabet);
             }
         }
 
-        static inline auto build_huffman_tree(const std::array<int16_t, MAX_ALPHABET_SIZE> &histogram,
-                                              std::array<tree_h_node, MAX_ALPHABET_SIZE * 2> &tree) -> uint16_t
+        template<uint32_t table_size_t>
+        static inline auto build_huffman_tree(const std::array<int16_t, table_size_t> &histogram,
+                                              std::array<tree_h_node, table_size_t * 2> &tree) -> uint16_t
         {
-            std::array<int16_t, MAX_ALPHABET_SIZE> heap{};
+            std::array<int16_t, table_size_t> heap{};
 
             auto heap_begin         = std::begin(heap);
             auto heap_next_position = heap_begin;
-            auto tree_next_node     = std::begin(tree) + MAX_ALPHABET_SIZE;
+            auto tree_next_node     = std::begin(tree) + table_size_t;
             auto comparator         = [&tree](const int16_t &a, const int16_t &b) -> bool
             {
                 return tree[a].frequency > tree[b].frequency;
             };
 
             // Copy histogram into the heap
-            for (int16_t i = 0; i < MAX_ALPHABET_SIZE; i++)
+            for (int16_t i = 0; i < table_size_t; i++)
             {
                 if (0 == histogram[i])
                 {
@@ -105,14 +108,15 @@ namespace dpp::huff
             return heap.front();
         }
 
-        static inline void calculate_codes(std::array<code, MAX_ALPHABET_SIZE> &alphabet)
+        template<uint32_t table_size_t>
+        static inline void calculate_codes(std::array<code, table_size_t> &alphabet)
         {
             uint8_t  code_lengths[MAX_CODE_LENGTH] = {0};
             uint32_t next_code[MAX_CODE_LENGTH]    = {0};
             uint32_t code                          = 0;
 
             // Calculate number of each code length
-            for (int32_t i = 0; i < MAX_ALPHABET_SIZE; i++)
+            for (int32_t i = 0; i < table_size_t; i++)
             {
                 if (0 == alphabet[i].code_length)
                 {
@@ -130,7 +134,7 @@ namespace dpp::huff
             }
 
             // Generate codes themselves
-            for (int32_t i = 0; i < MAX_ALPHABET_SIZE; i++)
+            for (int32_t i = 0; i < table_size_t; i++)
             {
                 if (0 == alphabet[i].code_length)
                 {
@@ -143,14 +147,24 @@ namespace dpp::huff
         }
     }
 
-    void build_huffman_alphabet(const std::array<int16_t, MAX_ALPHABET_SIZE> &histogram,
-                                std::array<code, MAX_ALPHABET_SIZE> &huffman_alphabet)
+    template<uint32_t table_size_t>
+    void build_huffman_alphabet(const std::array<int16_t, table_size_t> &histogram,
+                                std::array<code, table_size_t> &huffman_alphabet)
     {
-        std::array<tree_h_node, MAX_ALPHABET_SIZE * 2> tree{};
+        std::array<tree_h_node, table_size_t * 2> tree{};
 
-        const uint16_t root_idx = internal::build_huffman_tree(histogram, tree);
+        const uint16_t root_idx = internal::build_huffman_tree<table_size_t>(histogram, tree);
 
-        internal::calculate_code_lengths(tree, root_idx, huffman_alphabet);
-        internal::calculate_codes(huffman_alphabet);
+        internal::calculate_code_lengths<table_size_t>(tree, root_idx, huffman_alphabet);
+        internal::calculate_codes<table_size_t>(huffman_alphabet);
     }
+
+    template
+    void build_huffman_alphabet<LITERALS_MATCH_LENGTHS_TABLE_SIZE>(
+            const std::array<int16_t, LITERALS_MATCH_LENGTHS_TABLE_SIZE> &histogram,
+            std::array<code, LITERALS_MATCH_LENGTHS_TABLE_SIZE> &huffman_alphabet);
+
+    template
+    void build_huffman_alphabet<OFFSETS_TABLE_SIZE>(const std::array<int16_t, OFFSETS_TABLE_SIZE> &histogram,
+                                                    std::array<code, OFFSETS_TABLE_SIZE> &huffman_alphabet);
 }

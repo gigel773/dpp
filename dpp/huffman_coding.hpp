@@ -19,11 +19,13 @@ namespace dpp::huff
         uint8_t  code_length;
     };
 
-    constexpr const uint32_t MAX_ALPHABET_SIZE = 256;
-    constexpr const uint32_t MAX_CODE_LENGTH   = 16;
+    constexpr const uint32_t MAX_CODE_LENGTH                   = 16;
+    constexpr const uint32_t LITERALS_MATCH_LENGTHS_TABLE_SIZE = 286;
+    constexpr const uint32_t OFFSETS_TABLE_SIZE                = 30;
 
-    void build_huffman_alphabet(const std::array<int16_t, MAX_ALPHABET_SIZE> &histogram,
-                                std::array<code, MAX_ALPHABET_SIZE> &huffman_alphabet);
+    template<uint32_t table_size_t>
+    void build_huffman_alphabet(const std::array<int16_t, table_size_t> &histogram,
+                                std::array<code, table_size_t> &huffman_alphabet);
 }
 
 
