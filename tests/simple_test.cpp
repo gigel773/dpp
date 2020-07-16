@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
+#include <array>
 #include <memory>
 
 #include <dpp.hpp>
