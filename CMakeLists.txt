@@ -10,7 +10,7 @@ if (BUILD_ZLIB)
 endif ()
 file(GLOB SOURCES dpp/*.cpp)
 
-add_library(dpp ${SOURCES} dpp/dpp.hpp)
+add_library(dpp ${SOURCES} dpp/dpp.hpp dpp/hash_table.hpp)
 
 target_include_directories(dpp
         PUBLIC include

@@ -1,76 +1,18 @@
 #ifndef DPP_DEFLATE_PASS_HPP
 #define DPP_DEFLATE_PASS_HPP
 
-#include <cstdint>
-#include <array>
-#include <immintrin.h>
-
+#include "defs.hpp"
 #include "huffman_coding.hpp"
+#include "hash_table.hpp"
+#include "util.hpp"
 
 namespace dpp
 {
-    constexpr const uint32_t MINIMAL_MATCH_LENGTH = 4;
-    constexpr const uint32_t HISTORY_BUFFER_SIZE  = 32768;
-
-    class hash_table_t
-    {
-        static constexpr const uint32_t HASH_MASK = HISTORY_BUFFER_SIZE - 1;
-
-    public:
-        constexpr hash_table_t()
-        {
-            for (int32_t i = 0; i < HISTORY_BUFFER_SIZE; i++)
-            {
-                hash_table_[i] = -1;
-            }
-        }
-
-        template<class iterator_t>
-        auto operator[](iterator_t source) -> int32_t &
-        {
-            static_assert(std::is_same<typename std::iterator_traits<iterator_t>::iterator_category,
-                                  std::random_access_iterator_tag>::value,
-                          "Invalid iterator passed (should be random access)");
-
-            const uint32_t hash = HASH_MASK & _mm_crc32_u32(*reinterpret_cast<uint32_t *>(&*source), 0);
-
-            return hash_table_[hash];
-        }
-
-    private:
-        std::array<int32_t, HISTORY_BUFFER_SIZE> hash_table_{};
-    };
-
-    namespace internal
-    {
-        template<class iterator_t>
-        auto compare(iterator_t left, iterator_t right) -> int32_t
-        {
-            const iterator_t boundary     = right;
-            int32_t          match_length = 0;
-
-            while (left < boundary &&
-                   *left == *right)
-            {
-                match_length++;
-                left++;
-                right++;
-            }
-
-            return match_length >= MINIMAL_MATCH_LENGTH ? match_length : -1;
-        }
-
-        auto get_length_index(int32_t length) -> uint32_t;
-
-        auto get_offset_index(int32_t offset) -> uint32_t;
-    }
-
     template<class input_iterator_t,
             class output_iterator_t>
     void deflate(const input_iterator_t &src_begin,
                  const input_iterator_t &src_end,
-                 const output_iterator_t &dst_begin,
-                 const output_iterator_t &dst_end)
+                 const output_iterator_t &dst_begin)
     {
         // Variables
         auto                     current_byte = src_begin;
@@ -85,7 +27,7 @@ namespace dpp
 
             if (candidate_idx != -1)
             {
-                const int32_t match_length = internal::compare(candidate, current_byte);
+                const int32_t match_length = util::compare(candidate, current_byte);
                 const int32_t offset       = std::distance(candidate, current_byte);
 
                 if (match_length == -1 || offset > HISTORY_BUFFER_SIZE)
@@ -96,8 +38,8 @@ namespace dpp
                     continue;
                 }
 
-                literals_matches_histogram[internal::get_length_index(match_length)]++;
-                offsets_histogram[internal::get_offset_index(offset)]++;
+                literals_matches_histogram[util::get_length_index(match_length)]++;
+                offsets_histogram[util::get_offset_index(offset)]++;
 
                 hash_table[current_byte] = std::distance(src_begin, current_byte);
 

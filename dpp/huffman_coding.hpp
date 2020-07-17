@@ -1,8 +1,7 @@
 #ifndef DPP_HUFFMAN_CODING_HPP
 #define DPP_HUFFMAN_CODING_HPP
 
-#include <cstdint>
-#include <type_traits>
+#include "defs.hpp"
 
 namespace dpp::huff
 {
