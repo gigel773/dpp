@@ -6,10 +6,17 @@
 
 namespace dpp::huff
 {
+    struct tree_node_t
+    {
+        int32_t frequency;
+        int16_t left_child;
+        int16_t right_child;
+    };
+
     namespace internal
     {
         template<uint32_t table_size_t>
-        static inline auto calculate_code_length(const std::array<tree_h_node, table_size_t * 2> &tree,
+        static inline auto calculate_code_length(const std::array<tree_node_t, table_size_t * 2> &tree,
                                                  const int16_t node_idx,
                                                  const uint8_t current_length,
                                                  std::array<code, table_size_t> &huffman_alphabet) -> void
@@ -33,7 +40,7 @@ namespace dpp::huff
         }
 
         template<uint32_t table_size_t>
-        static inline auto calculate_code_lengths(const std::array<tree_h_node, table_size_t * 2> &tree,
+        static inline auto calculate_code_lengths(const std::array<tree_node_t, table_size_t * 2> &tree,
                                                   int16_t root_node,
                                                   std::array<code, table_size_t> &huffman_alphabet)
         {
@@ -52,7 +59,7 @@ namespace dpp::huff
 
         template<uint32_t table_size_t>
         static inline auto build_huffman_tree(const std::array<int16_t, table_size_t> &histogram,
-                                              std::array<tree_h_node, table_size_t * 2> &tree) -> uint16_t
+                                              std::array<tree_node_t, table_size_t * 2> &tree) -> uint16_t
         {
             std::array<int16_t, table_size_t> heap{};
 
@@ -151,7 +158,7 @@ namespace dpp::huff
     void build_huffman_alphabet(const std::array<int16_t, table_size_t> &histogram,
                                 std::array<code, table_size_t> &huffman_alphabet)
     {
-        std::array<tree_h_node, table_size_t * 2> tree{};
+        std::array<tree_node_t, table_size_t * 2> tree{};
 
         const uint16_t root_idx = internal::build_huffman_tree<table_size_t>(histogram, tree);
 

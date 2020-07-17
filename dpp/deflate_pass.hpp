@@ -4,6 +4,7 @@
 #include "defs.hpp"
 #include "huffman_coding.hpp"
 #include "hash_table.hpp"
+#include "histogram.hpp"
 #include "util.hpp"
 
 namespace dpp
@@ -15,10 +16,9 @@ namespace dpp
                  const output_iterator_t &dst_begin)
     {
         // Variables
-        auto                     current_byte = src_begin;
-        hash_table_t             hash_table{};
-        std::array<int16_t, 286> literals_matches_histogram{};
-        std::array<int16_t, 30>  offsets_histogram{};
+        auto         current_byte = src_begin;
+        hash_table_t hash_table{};
+        histogram_t  histogram{};
 
         while (current_byte < src_end - MINIMAL_MATCH_LENGTH)
         {
@@ -32,21 +32,20 @@ namespace dpp
 
                 if (match_length == -1 || offset > HISTORY_BUFFER_SIZE)
                 {
-                    literals_matches_histogram[*current_byte]++;
+                    histogram.update(*current_byte);
                     hash_table[current_byte] = std::distance(src_begin, current_byte);
                     current_byte++;
                     continue;
                 }
 
-                literals_matches_histogram[util::get_length_index(match_length)]++;
-                offsets_histogram[util::get_offset_index(offset)]++;
+                histogram.update({match_length, offset});
 
                 hash_table[current_byte] = std::distance(src_begin, current_byte);
 
                 current_byte += match_length;
             } else
             {
-                literals_matches_histogram[*current_byte]++;
+                histogram.update(*current_byte);
                 hash_table[current_byte] = std::distance(src_begin, current_byte);
                 current_byte++;
             }
@@ -54,16 +53,16 @@ namespace dpp
 
         for (auto symbol = current_byte; symbol < src_end; symbol++)
         {
-            literals_matches_histogram[*symbol]++;
+            histogram.update(*current_byte);
         }
 
         // Build tables
-        std::array<huff::code, literals_matches_histogram.size()> literals_matches_alphabet{};
-        std::array<huff::code, offsets_histogram.size()>          offsets_alphabet{};
+        std::array<huff::code, LITERALS_MATCH_LENGTHS_TABLE_SIZE> literals_matches_alphabet{};
+        std::array<huff::code, OFFSETS_TABLE_SIZE>                offsets_alphabet{};
 
-        huff::build_huffman_alphabet<huff::LITERALS_MATCH_LENGTHS_TABLE_SIZE>(literals_matches_histogram,
-                                                                              literals_matches_alphabet);
-        huff::build_huffman_alphabet<huff::OFFSETS_TABLE_SIZE>(offsets_histogram, offsets_alphabet);
+        huff::build_huffman_alphabet<LITERALS_MATCH_LENGTHS_TABLE_SIZE>(histogram.get_literals_histogram(),
+                                                                        literals_matches_alphabet);
+        huff::build_huffman_alphabet<OFFSETS_TABLE_SIZE>(histogram.get_offsets_histogram(), offsets_alphabet);
     }
 }
 
