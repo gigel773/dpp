@@ -5,6 +5,7 @@
 #include "huffman_coding.hpp"
 #include "hash_table.hpp"
 #include "histogram.hpp"
+#include "unpacking.hpp"
 #include "util.hpp"
 
 namespace dpp
@@ -35,13 +36,12 @@ namespace dpp
                     histogram.update(*current_byte);
                     hash_table[current_byte] = std::distance(src_begin, current_byte);
                     current_byte++;
+
                     continue;
                 }
 
                 histogram.update({match_length, offset});
-
                 hash_table[current_byte] = std::distance(src_begin, current_byte);
-
                 current_byte += match_length;
             } else
             {
@@ -63,6 +63,9 @@ namespace dpp
         huff::build_huffman_alphabet<LITERALS_MATCH_LENGTHS_TABLE_SIZE>(histogram.get_literals_histogram(),
                                                                         literals_matches_alphabet);
         huff::build_huffman_alphabet<OFFSETS_TABLE_SIZE>(histogram.get_offsets_histogram(), offsets_alphabet);
+
+        // Unpack tables
+
     }
 }
 
