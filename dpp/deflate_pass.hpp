@@ -65,7 +65,7 @@ namespace dpp
         huff::build_huffman_alphabet<OFFSETS_TABLE_SIZE>(histogram.get_offsets_histogram(), offsets_alphabet);
 
         // Unpack tables
-
+        auto match_lengths = create_match_lengths_mapping();
     }
 }
 
