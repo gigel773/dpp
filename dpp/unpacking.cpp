@@ -43,7 +43,7 @@ namespace dpp
         }
     }
 
-    auto create_match_lengths_mapping(const std::array<huff::code, LITERALS_MATCH_LENGTHS_TABLE_SIZE> &alphabet)
+    auto unpack_match_lengths_table(const std::array<huff::code, LITERALS_MATCH_LENGTHS_TABLE_SIZE> &alphabet)
     -> std::array<huff::code, 258>
     {
         constexpr uint32_t          bits_to_step[] = {1, 3, 7, 15, 31};
@@ -75,10 +75,9 @@ namespace dpp
 
                 while (current_length <= upper_boundary && (current_length - 3) < result.size())
                 {
-                    const uint16_t code          = alphabet[current_base].code;
-                    const uint16_t code_length   = alphabet[current_base].code_length;
-                    const uint8_t  reversed_bits = util::reverse_byte_table(current_bits) >> (8u - actual_bit_length);
-
+                    const uint16_t code            = alphabet[current_base].code;
+                    const uint16_t code_length     = alphabet[current_base].code_length;
+                    const uint8_t  reversed_bits   = util::reverse_byte_table(current_bits) >> (8u - actual_bit_length);
                     const uint16_t new_code        = code | static_cast<uint16_t>(reversed_bits << code_length);
                     const uint8_t  new_code_length = code_length + actual_bit_length;
 

@@ -5,7 +5,7 @@
 
 namespace dpp
 {
-    auto create_match_lengths_mapping(const std::array<huff::code, LITERALS_MATCH_LENGTHS_TABLE_SIZE> &alphabet)
+    auto unpack_match_lengths_table(const std::array<huff::code, LITERALS_MATCH_LENGTHS_TABLE_SIZE> &alphabet)
     -> std::array<huff::code, 258>;
 }
 
