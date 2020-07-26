@@ -1,68 +1,8 @@
 #include "unpacking.hpp"
+#include "bit_manipulation.hpp"
 
 namespace dpp
 {
-    namespace util
-    {
-        constexpr auto reverse(uint8_t value) -> uint8_t
-        {
-            uint8_t result       = 0;
-            uint8_t bit_position = 1u << 7u;
-
-            for (int32_t i = 0; i < 8; i++)
-            {
-                if (value & 1u)
-                {
-                    result |= bit_position;
-                }
-
-                bit_position >>= 1u;
-                value >>= 1u;
-            }
-
-            return result;
-        }
-
-        constexpr auto reverse(uint16_t value) -> uint16_t
-        {
-            uint16_t result       = 0;
-            uint16_t bit_position = 1u << 15u;
-
-            for (int32_t i = 0; i < 16; i++)
-            {
-                if (value & 1u)
-                {
-                    result |= bit_position;
-                }
-
-                bit_position >>= 1u;
-                value >>= 1u;
-            }
-
-            return result;
-        }
-
-        template<class type_t>
-        constexpr auto build_reverse_table() -> std::array<type_t, std::numeric_limits<type_t>::max() + 1>
-        {
-            std::array<type_t, std::numeric_limits<type_t>::max() + 1> result{};
-
-            for (uint16_t i = 0; i < std::numeric_limits<type_t>::max() + 1; i++)
-            {
-                result[i] = reverse(static_cast<type_t>(i));
-            }
-
-            return result;
-        }
-
-        auto reverse_byte_table(uint8_t byte) -> uint8_t
-        {
-            static constexpr const auto table = build_reverse_table<uint8_t>();
-
-            return table[byte];
-        }
-    }
-
     auto unpack_match_lengths_table(const std::array<huff::code, LITERALS_MATCH_LENGTHS_TABLE_SIZE> &alphabet)
     -> std::array<huff::code, 258>
     {
@@ -97,7 +37,7 @@ namespace dpp
                 {
                     const uint16_t code            = alphabet[current_base].code;
                     const uint16_t code_length     = alphabet[current_base].code_length;
-                    const uint8_t  reversed_bits   = util::reverse_byte_table(current_bits) >> (8u - actual_bit_length);
+                    const uint8_t  reversed_bits   = util::reverse_t(current_bits) >> (8u - actual_bit_length);
                     const uint16_t new_code        = code | static_cast<uint16_t>(reversed_bits << code_length);
                     const uint8_t  new_code_length = code_length + actual_bit_length;
 
@@ -149,7 +89,7 @@ namespace dpp
                 {
                     const uint16_t code            = alphabet[current_base].code;
                     const uint16_t code_length     = alphabet[current_base].code_length;
-                    const uint8_t  reversed_bits   = util::reverse(current_bits) >> (16u - actual_bit_length);
+                    const uint8_t  reversed_bits   = util::reverse_t(current_bits) >> (16u - actual_bit_length);
                     const uint16_t new_code        = code | static_cast<uint16_t>(reversed_bits << code_length);
                     const uint8_t  new_code_length = code_length + actual_bit_length;
 
