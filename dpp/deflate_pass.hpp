@@ -66,6 +66,9 @@ namespace dpp
 
         // Unpack tables
         auto match_lengths_unpacked = unpack_match_lengths_table(literals_matches_alphabet);
+        auto offsets_unpacked       = unpack_offsets_table(offsets_alphabet);
+
+        // Encode the text
     }
 }
 
