@@ -45,8 +45,13 @@ namespace dpp
                     }
 
                     match_handler({match_length, offset});
-                    hash_table[current_byte] = std::distance(src_begin, current_byte);
-                    current_byte += match_length;
+                    const auto upper_boundary = current_byte + match_length;
+
+                    while (current_byte < upper_boundary)
+                    {
+                        hash_table[current_byte] = std::distance(src_begin, current_byte);
+                        current_byte++;
+                    }
                 } else
                 {
                     literal_handler(*current_byte);

@@ -33,7 +33,9 @@ int main()
 
     auto result_size = dpp::deflate(std::begin(result), std::end(result), std::begin(destination));
 
+    std::cout << "Compressed size: " << result_size << "\n";
     std::cout << "Compression ratio: " << (float) (result.size()) / (float) (result_size) << "\n";
+    std::cout << "Compression %: " << ((float) (result_size) / (float) (result.size())) * 100 << "\n";
 
     return 0;
 }
