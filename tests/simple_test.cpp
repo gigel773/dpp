@@ -31,7 +31,9 @@ int main()
 
     std::vector<uint8_t> destination(result.size(), 0);
 
-    dpp::deflate(std::begin(result), std::end(result), std::begin(destination));
+    auto result_size = dpp::deflate(std::begin(result), std::end(result), std::begin(destination));
+
+    std::cout << "Compression ratio: " << (float) (result.size()) / (float) (result_size) << "\n";
 
     return 0;
 }

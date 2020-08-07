@@ -5,7 +5,7 @@
 
 namespace dpp
 {
-    constexpr const uint32_t MINIMAL_MATCH_LENGTH = 4;
+    constexpr const uint32_t MINIMAL_MATCH_LENGTH = 3;
     constexpr const uint32_t HISTORY_BUFFER_SIZE  = 32768;
 
     class hash_table_t
