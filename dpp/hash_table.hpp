@@ -34,7 +34,7 @@ namespace dpp
         }
 
     private:
-        std::array <int32_t, HISTORY_BUFFER_SIZE> hash_table_{};
+        std::array<int32_t, HISTORY_BUFFER_SIZE> hash_table_{};
     };
 }
 

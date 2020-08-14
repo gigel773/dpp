@@ -1,6 +1,7 @@
 #include <array>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 
 #include "huffman_coding.hpp"
 
@@ -13,106 +14,170 @@ namespace dpp::huff
         int16_t right_child;
     };
 
+    struct package_node_t
+    {
+        constexpr package_node_t() = default;
+
+        explicit package_node_t(int16_t value, bool is_packed = false)
+                : value(value),
+                  is_packed(is_packed)
+        {
+            // Default constructor
+        }
+
+        int16_t value     = 0;
+        bool    is_packed = false;
+    };
+
     namespace internal
     {
-        template<uint32_t table_size_t>
-        static inline auto calculate_code_length(const std::array<tree_node_t, table_size_t * 2> &tree,
-                                                 const int16_t node_idx,
-                                                 const uint8_t current_length,
-                                                 std::array<code, table_size_t> &huffman_alphabet) -> void
+        template<class input_iterator_t, class output_iterator_t>
+        void pack(input_iterator_t begin, input_iterator_t end, output_iterator_t dest)
         {
-            const auto &node = tree[node_idx];
-
-            if (node.left_child == -1 && node.right_child == -1)
+            if (std::distance(begin, end) % 2)
             {
-                huffman_alphabet[node_idx].code_length = current_length;
+                end--;
             }
 
-            if (node.left_child != -1)
-            {
-                calculate_code_length<table_size_t>(tree, node.left_child, current_length + 1, huffman_alphabet);
-            }
+            auto first    = begin;
+            auto second   = begin + 1;
+            auto cur_dest = dest;
 
-            if (node.right_child != -1)
+            while (second < end)
             {
-                calculate_code_length<table_size_t>(tree, node.right_child, current_length + 1, huffman_alphabet);
+                *cur_dest++ = package_node_t(first->value + second->value, true);
+
+                first += 2;
+                second += 2;
             }
         }
 
         template<uint32_t table_size_t>
-        static inline auto calculate_code_lengths(const std::array<tree_node_t, table_size_t * 2> &tree,
-                                                  int16_t root_node,
-                                                  std::array<code, table_size_t> &huffman_alphabet)
+        static inline auto calculate_code_lengths(const std::array<int16_t, table_size_t> &histogram,
+                                                  std::array<code, table_size_t> &alphabet) -> void
         {
-            const auto &node = tree[root_node];
+            constexpr const size_t max_huffman_code = 16;
 
-            if (node.left_child != -1)
+            std::array<std::vector<package_node_t>, max_huffman_code> packages{};
+            std::array<std::vector<package_node_t>, max_huffman_code> solutions{};
+
+            uint32_t count = std::count_if(std::begin(histogram), std::end(histogram), [](auto it)
             {
-                internal::calculate_code_length<table_size_t>(tree, node.left_child, 1, huffman_alphabet);
-            }
+                return it > 0;
+            });
 
-            if (node.right_child != -1)
+            const size_t         package_count = count * 2 - 2;
+            std::vector<int16_t> index_mapping;
+            index_mapping.reserve(count);
+
+            auto comparator = [](package_node_t &a, package_node_t &b)
             {
-                internal::calculate_code_length<table_size_t>(tree, node.right_child, 1, huffman_alphabet);
-            }
-        }
-
-        template<uint32_t table_size_t>
-        static inline auto build_huffman_tree(const std::array<int16_t, table_size_t> &histogram,
-                                              std::array<tree_node_t, table_size_t * 2> &tree) -> uint16_t
-        {
-            std::array<int16_t, table_size_t> heap{};
-
-            auto heap_begin         = std::begin(heap);
-            auto heap_next_position = heap_begin;
-            auto tree_next_node     = std::begin(tree) + table_size_t;
-            auto comparator         = [&tree](const int16_t &a, const int16_t &b) -> bool
-            {
-                return tree[a].frequency > tree[b].frequency;
+                return a.value < b.value;
             };
 
-            // Copy histogram into the heap
-            for (int16_t i = 0; i < table_size_t; i++)
+            auto current_package  = std::begin(packages);
+            auto next_package     = current_package + 1;
+            auto current_solution = std::begin(solutions);
+
+            std::for_each(std::begin(packages), std::end(packages), [&count](auto &it)
+            {
+                it.reserve(count);
+                count += count / 2;
+            });
+
+            std::for_each(std::begin(solutions), std::end(solutions), [package_count](auto &it)
+            {
+                it.reserve(package_count);
+            });
+
+            // First step
+            for (size_t i = 0; i < table_size_t; i++)
             {
                 if (0 == histogram[i])
                 {
                     continue;
                 }
 
-                tree[i].frequency   = histogram[i];
-                tree[i].right_child = -1;
-                tree[i].left_child  = -1;
-
-                *heap_next_position++ = i;
+                packages[0].emplace_back(histogram[i]);
+                index_mapping.push_back(i);
             }
 
-            auto heap_end = heap_next_position;
-
-            // Initialize heap
-            std::make_heap(heap_begin, heap_end, comparator);
-
-            // Build a tree
-            while (std::distance(heap_begin, heap_end) > 1)
+            std::sort(std::begin(packages[0]), std::end(packages[0]), comparator);
+            std::sort(std::begin(index_mapping), std::end(index_mapping), [&histogram](auto a, auto b)
             {
-                std::pop_heap(heap_begin, heap_end, comparator);
-                auto lowest_idx1 = *(heap_end - 1);
+                return histogram[a] < histogram[b];
+            });
 
-                heap_end--;
+            while (next_package < std::end(packages))
+            {
+                std::vector<package_node_t> packed(current_package->size() / 2);
 
-                std::pop_heap(heap_begin, heap_end, comparator);
-                auto lowest_idx2 = *(heap_end - 1);
+                pack(std::begin(*current_package), std::end(*current_package), std::begin(packed));
 
-                tree_next_node->frequency   = tree[lowest_idx1].frequency + tree[lowest_idx2].frequency;
-                tree_next_node->left_child  = lowest_idx1;
-                tree_next_node->right_child = lowest_idx2;
+                std::copy(std::begin(packages[0]), std::end(packages[0]), std::back_inserter(*next_package));
+                std::copy(packed.begin(), packed.end(), std::back_inserter(*next_package));
 
-                *(heap_end - 1) = std::distance(std::begin(tree), tree_next_node);
-                std::make_heap(heap_begin, heap_end, comparator);
+                std::sort(next_package->begin(), next_package->end(), comparator);
 
-                tree_next_node++;
+                // Next iteration
+                current_package++;
+                next_package++;
             }
 
-            return heap.front();
+            // Second step
+            current_package = std::begin(packages);
+
+            while (current_package < std::end(packages))
+            {
+                auto element_count = std::min(package_count, current_package->size());
+                auto cur_begin     = current_package->begin();
+                auto cur_end       = cur_begin + element_count;
+
+                std::copy(cur_begin, cur_end, std::back_inserter(*current_solution));
+
+                current_package++;
+                current_solution++;
+            }
+
+            // Third step
+            auto previous_solution = std::end(solutions) - 1;
+            current_solution = previous_solution - 1;
+            current_package  = std::end(packages) - 2;
+
+            while (current_solution > std::begin(solutions) - 1)
+            {
+                size_t nodes_count   = std::count_if(previous_solution->begin(),
+                                                     previous_solution->end(),
+                                                     [](package_node_t &node)
+                                                     {
+                                                         return node.is_packed;
+                                                     });
+                auto   element_count = std::min(nodes_count * 2, current_package->size());
+                auto   cur_begin     = current_package->begin();
+                auto   cur_end       = cur_begin + element_count;
+
+                current_solution->clear();
+                std::copy(cur_begin, cur_end, std::back_inserter(*current_solution));
+
+                current_solution--;
+                current_package--;
+                previous_solution--;
+            }
+
+            // Fourth step
+            for (auto &sol: solutions)
+            {
+                size_t element_pos = 0;
+
+                for (auto &it : sol)
+                {
+                    if (!it.is_packed)
+                    {
+                        int16_t restored_idx = index_mapping[element_pos++];
+                        alphabet[restored_idx].code_length++;
+                    }
+                }
+            }
         }
 
         template<uint32_t table_size_t>
@@ -158,11 +223,7 @@ namespace dpp::huff
     void build_huffman_alphabet(const std::array<int16_t, table_size_t> &histogram,
                                 std::array<code, table_size_t> &huffman_alphabet)
     {
-        std::array<tree_node_t, table_size_t * 2> tree{};
-
-        const uint16_t root_idx = internal::build_huffman_tree<table_size_t>(histogram, tree);
-
-        internal::calculate_code_lengths<table_size_t>(tree, root_idx, huffman_alphabet);
+        internal::calculate_code_lengths<table_size_t>(histogram, huffman_alphabet);
         internal::calculate_codes<table_size_t>(huffman_alphabet);
     }
 
