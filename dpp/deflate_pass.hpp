@@ -111,7 +111,10 @@ namespace dpp
                                    const auto match_code_length  = match_lengths_unpacked[match.length - 3].code_length;
                                    const auto offset_code_length = offsets_unpacked[match.offset].code_length;
 
-                                   if (match_code_length > 16 || offset_code_length > 16)
+                                   const auto match_base_code_length = literals_matches_alphabet[util::get_length_index(match.length)].code_length;
+                                   const auto offset_base_code_length = offsets_alphabet[util::get_offset_index(match.offset)].code_length;
+
+                                   if (match_base_code_length > 16 || offset_base_code_length > 16)
                                    {
                                        throw std::out_of_range("Code length is bigger than 16");
                                    }
