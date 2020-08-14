@@ -52,7 +52,6 @@ namespace dpp::huff
             }
         }
 
-        // TODO remove code generation for 0-frequency elements
         template<uint32_t table_size_t>
         static inline auto calculate_code_lengths(const std::array<int16_t, table_size_t> &histogram,
                                                   std::array<code, table_size_t> &alphabet) -> void
@@ -61,10 +60,15 @@ namespace dpp::huff
 
             std::array<std::vector<package_node_t>, max_huffman_code> packages{};
             std::array<std::vector<package_node_t>, max_huffman_code> solutions{};
-            std::array<int16_t, table_size_t>                         index_mapping{};
 
-            constexpr const size_t package_count = table_size_t * 2 - 2;
-            uint32_t               count         = table_size_t;
+            uint32_t count = std::count_if(std::begin(histogram), std::end(histogram), [](auto it)
+            {
+                return it > 0;
+            });
+
+            const size_t         package_count = count * 2 - 2;
+            std::vector<int16_t> index_mapping;
+            index_mapping.reserve(count);
 
             auto comparator = [](package_node_t &a, package_node_t &b)
             {
@@ -86,12 +90,16 @@ namespace dpp::huff
                 it.reserve(package_count);
             });
 
-            std::iota(std::begin(index_mapping), std::end(index_mapping), 0);
-
             // First step
-            for (auto it: histogram)
+            for (size_t i = 0; i < table_size_t; i++)
             {
-                packages[0].emplace_back(it);
+                if (0 == histogram[i])
+                {
+                    continue;
+                }
+
+                packages[0].emplace_back(histogram[i]);
+                index_mapping.push_back(i);
             }
 
             std::sort(std::begin(packages[0]), std::end(packages[0]), comparator);
