@@ -56,12 +56,11 @@ namespace dpp::huff
         static inline auto calculate_code_lengths(const std::array<int16_t, table_size_t> &histogram,
                                                   std::array<code, table_size_t> &alphabet) -> void
         {
-            constexpr const size_t max_huffman_code = 16;
+            constexpr const size_t max_huffman_code = MAX_CODE_LENGTH;
 
             std::array<std::vector<package_node_t>, max_huffman_code> packages{};
-            std::array<std::vector<package_node_t>, max_huffman_code> solutions{};
 
-            uint32_t count = std::count_if(std::begin(histogram), std::end(histogram), [](auto it)
+            size_t count = std::count_if(std::begin(histogram), std::end(histogram), [](auto it)
             {
                 return it > 0;
             });
@@ -75,22 +74,14 @@ namespace dpp::huff
                 return a.value < b.value;
             };
 
-            auto current_package  = std::begin(packages);
-            auto next_package     = current_package + 1;
-            auto current_solution = std::begin(solutions);
+            auto current_package = std::begin(packages);
+            auto next_package    = current_package + 1;
 
-            std::for_each(std::begin(packages), std::end(packages), [&count](auto &it)
+            for (size_t i = 0; i < max_huffman_code; i++)
             {
-                it.reserve(count);
-                count += count / 2;
-            });
+                packages[i].reserve(package_count);
+            }
 
-            std::for_each(std::begin(solutions), std::end(solutions), [package_count](auto &it)
-            {
-                it.reserve(package_count);
-            });
-
-            // First step
             for (size_t i = 0; i < table_size_t; i++)
             {
                 if (0 == histogram[i])
@@ -110,9 +101,12 @@ namespace dpp::huff
 
             while (next_package < std::end(packages))
             {
-                std::vector<package_node_t> packed(current_package->size() / 2);
+                std::vector<package_node_t> packed(std::min(package_count - count, current_package->size() / 2));
 
-                pack(std::begin(*current_package), std::end(*current_package), std::begin(packed));
+                auto cur_begin = current_package->begin();
+                auto cur_end   = cur_begin + packed.size() * 2;
+
+                pack(cur_begin, cur_end, std::begin(packed));
 
                 std::copy(std::begin(packages[0]), std::end(packages[0]), std::back_inserter(*next_package));
                 std::copy(packed.begin(), packed.end(), std::back_inserter(*next_package));
@@ -124,58 +118,45 @@ namespace dpp::huff
                 next_package++;
             }
 
-            // Second step
-            current_package = std::begin(packages);
+            current_package = std::end(packages) - 2;
+            auto previous_package = std::end(packages) - 1;
 
-            while (current_package < std::end(packages))
+            while (current_package > std::begin(packages) - 1)
             {
-                auto element_count = std::min(package_count, current_package->size());
-                auto cur_begin     = current_package->begin();
-                auto cur_end       = cur_begin + element_count;
+                const size_t nodes_count = std::count_if(previous_package->begin(),
+                                                         previous_package->end(),
+                                                         [](package_node_t &node)
+                                                         {
+                                                             return node.is_packed;
+                                                         });
 
-                std::copy(cur_begin, cur_end, std::back_inserter(*current_solution));
-
-                current_package++;
-                current_solution++;
-            }
-
-            // Third step
-            auto previous_solution = std::end(solutions) - 1;
-            current_solution = previous_solution - 1;
-            current_package  = std::end(packages) - 2;
-
-            while (current_solution > std::begin(solutions) - 1)
-            {
-                size_t nodes_count   = std::count_if(previous_solution->begin(),
-                                                     previous_solution->end(),
-                                                     [](package_node_t &node)
-                                                     {
-                                                         return node.is_packed;
-                                                     });
                 auto   element_count = std::min(nodes_count * 2, current_package->size());
-                auto   cur_begin     = current_package->begin();
-                auto   cur_end       = cur_begin + element_count;
+                size_t element_pos   = 0;
 
-                current_solution->clear();
-                std::copy(cur_begin, cur_end, std::back_inserter(*current_solution));
+                current_package->resize(element_count);
 
-                current_solution--;
-                current_package--;
-                previous_solution--;
-            }
-
-            // Fourth step
-            for (auto &sol: solutions)
-            {
-                size_t element_pos = 0;
-
-                for (auto &it : sol)
+                for (auto &it: *current_package)
                 {
                     if (!it.is_packed)
                     {
                         int16_t restored_idx = index_mapping[element_pos++];
                         alphabet[restored_idx].code_length++;
                     }
+                }
+
+                // Next iteration
+                current_package--;
+                previous_package--;
+            }
+
+            size_t element_pos = 0;
+
+            for (auto &it: packages.back())
+            {
+                if (!it.is_packed)
+                {
+                    int16_t restored_idx = index_mapping[element_pos++];
+                    alphabet[restored_idx].code_length++;
                 }
             }
         }
