@@ -39,5 +39,6 @@ int main()
         std::cout << "Compression ratio: " << (float) (result.size()) / (float) (result_size) << "\n";
         std::cout << "Compression %: " << ((float) (result_size) / (float) (result.size())) * 100 << "\n";
     }
+    
     return 0;
 }

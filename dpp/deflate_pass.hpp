@@ -15,8 +15,8 @@ namespace dpp
         template<class iterator_t,
                 class match_handler_t,
                 class literal_handler_t>
-        void deflate_pass(const iterator_t &src_begin,
-                          const iterator_t &src_end,
+        void deflate_pass(const iterator_t src_begin,
+                          const iterator_t src_end,
                           match_handler_t match_handler,
                           literal_handler_t literal_handler)
         {
@@ -70,9 +70,9 @@ namespace dpp
 
     template<class input_iterator_t,
             class output_iterator_t>
-    auto deflate(const input_iterator_t &src_begin,
-                 const input_iterator_t &src_end,
-                 const output_iterator_t &dst_begin) -> uint32_t
+    auto deflate(const input_iterator_t src_begin,
+                 const input_iterator_t src_end,
+                 const output_iterator_t dst_begin) -> uint32_t
     {
         // Variables
         histogram_t histogram{};
