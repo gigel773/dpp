@@ -125,7 +125,11 @@ namespace dpp
                     literals_matches_alphabet.end(),
                     [](rle::instruction it)
                     {
-                        // Process instruction here
+                        // Process instruction
+                    },
+                    [](huff::code it) -> uint8_t
+                    {
+                        return it.code_length;
                     });
 
         return (bits_written / 8) + (bits_written % 8 ? 1 : 0);
