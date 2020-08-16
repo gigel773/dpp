@@ -20,6 +20,16 @@ namespace dpp
         {
             uint16_t code;
             uint8_t  code_length;
+
+            bool operator==(const huff::code &rhs) const
+            {
+                return code_length == rhs.code_length;
+            }
+
+            bool operator!=(const huff::code &rhs) const
+            {
+                return !(rhs == *this);
+            }
         };
     }
 }

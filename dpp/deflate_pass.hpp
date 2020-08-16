@@ -6,6 +6,7 @@
 #include "hash_table.hpp"
 #include "histogram.hpp"
 #include "unpacking.hpp"
+#include "rle_coding.hpp"
 #include "util.hpp"
 
 namespace dpp
@@ -111,27 +112,21 @@ namespace dpp
                                    const auto match_code_length  = match_lengths_unpacked[match.length - 3].code_length;
                                    const auto offset_code_length = offsets_unpacked[match.offset].code_length;
 
-                                   const auto match_base_code_length = literals_matches_alphabet[util::get_length_index(match.length)].code_length;
-                                   const auto offset_base_code_length = offsets_alphabet[util::get_offset_index(match.offset)].code_length;
-
-                                   if (match_base_code_length > 16 || offset_base_code_length > 16)
-                                   {
-                                       throw std::out_of_range("Code length is bigger than 16");
-                                   }
-
                                    bits_written += match_code_length + offset_code_length;
                                },
                                [&](uint8_t literal)
                                {
                                    const auto code_length = literals_matches_alphabet[literal].code_length;
 
-                                   if (code_length > 16)
-                                   {
-                                       throw std::out_of_range("Code length is bigger than 16");
-                                   }
-
                                    bits_written += code_length;
                                });
+
+        rle::encode(literals_matches_alphabet.begin(),
+                    literals_matches_alphabet.end(),
+                    [](rle::instruction it)
+                    {
+                        // Process instruction here
+                    });
 
         return (bits_written / 8) + (bits_written % 8 ? 1 : 0);
     }
