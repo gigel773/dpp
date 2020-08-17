@@ -56,7 +56,7 @@ namespace dpp::huff
         static inline auto calculate_code_lengths(const std::array<int16_t, table_size_t> &histogram,
                                                   std::array<code, table_size_t> &alphabet) -> void
         {
-            constexpr const size_t max_huffman_code = MAX_CODE_LENGTH;
+            constexpr const size_t max_huffman_code = get_max_code_length(table_size_t);
 
             std::array<std::vector<package_node_t>, max_huffman_code> packages{};
 
@@ -216,4 +216,8 @@ namespace dpp::huff
     template
     void build_huffman_alphabet<OFFSETS_TABLE_SIZE>(const std::array<int16_t, OFFSETS_TABLE_SIZE> &histogram,
                                                     std::array<code, OFFSETS_TABLE_SIZE> &huffman_alphabet);
+
+    template
+    void build_huffman_alphabet<RLE_ALPHABET>(const std::array<int16_t, RLE_ALPHABET> &histogram,
+                                              std::array<code, RLE_ALPHABET> &huffman_alphabet);
 }

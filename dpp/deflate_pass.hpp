@@ -121,16 +121,60 @@ namespace dpp
                                    bits_written += code_length;
                                });
 
+        std::array<int16_t, RLE_ALPHABET>    rle_codes{};
+        std::array<huff::code, RLE_ALPHABET> rle_alphabet{};
+
         rle::encode(literals_matches_alphabet.begin(),
                     literals_matches_alphabet.end(),
-                    [](rle::instruction it)
+                    [&rle_codes](rle::instruction it)
                     {
-                        // Process instruction
+                        if (it.symbol == 0)
+                        {
+                            const size_t grand_repeats   = it.count / 138;
+                            const size_t grand_remainder = it.count % 138;
+
+                            rle_codes[18] += grand_repeats;
+
+                            if (grand_remainder >= 11)
+                            {
+                                rle_codes[18]++;
+                            } else
+                            {
+                                const size_t repeats   = grand_remainder / 10;
+                                const size_t remainder = grand_remainder % 10;
+
+                                rle_codes[17] += repeats;
+
+                                if (remainder >= 3)
+                                {
+                                    rle_codes[17]++;
+                                } else
+                                {
+                                    rle_codes[it.symbol] += remainder;
+                                }
+                            }
+                        } else
+                        {
+                            const size_t repeats   = it.count / 6;
+                            const size_t remainder = it.count % 6;
+
+                            rle_codes[16] += repeats;
+
+                            if (remainder >= 3)
+                            {
+                                rle_codes[16]++;
+                            } else
+                            {
+                                rle_codes[it.symbol] += remainder;
+                            }
+                        }
                     },
                     [](huff::code it) -> uint8_t
                     {
                         return it.code_length;
                     });
+
+        huff::build_huffman_alphabet<RLE_ALPHABET>(rle_codes, rle_alphabet);
 
         return (bits_written / 8) + (bits_written % 8 ? 1 : 0);
     }
