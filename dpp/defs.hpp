@@ -6,6 +6,7 @@
 #include <immintrin.h>
 #include <type_traits>
 #include <iostream>
+#include <vector>
 
 namespace dpp
 {

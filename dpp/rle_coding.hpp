@@ -20,10 +20,10 @@ namespace dpp::rle
     template<class input_iterator_t,
             class callable_t,
             class element_accessor_t>
-    void encode(const input_iterator_t begin,
-                const input_iterator_t end,
-                callable_t instruction_handler,
-                element_accessor_t accessor)
+    void run(const input_iterator_t begin,
+             const input_iterator_t end,
+             callable_t instruction_handler,
+             element_accessor_t accessor)
     {
         static_assert(std::is_invocable<callable_t, instruction>::value,
                       "Wrong instruction handler passed");
@@ -33,7 +33,7 @@ namespace dpp::rle
 
         auto   cur_symbol    = begin;
         auto   next_symbol   = cur_symbol + 1;
-        size_t element_count = 1;
+        size_t element_count = 0;
 
         while (next_symbol < end)
         {

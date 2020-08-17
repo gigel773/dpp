@@ -103,7 +103,7 @@ namespace dpp
         auto offsets_unpacked       = unpack_offsets_table(offsets_alphabet);
 
         // Encode the text
-        uint64_t bits_written = 0;
+        uint64_t bits_written = 17;
 
         internal::deflate_pass(src_begin,
                                src_end,
@@ -121,60 +121,104 @@ namespace dpp
                                    bits_written += code_length;
                                });
 
-        std::array<int16_t, RLE_ALPHABET>    rle_codes{};
-        std::array<huff::code, RLE_ALPHABET> rle_alphabet{};
+        std::array<int16_t, RLE_ALPHABET>        rle_codes{};
+        std::array<huff::code, RLE_ALPHABET>     rle_alphabet{};
+        std::vector<std::pair<uint8_t, uint8_t>> rle_instructions;
 
-        rle::encode(literals_matches_alphabet.begin(),
-                    literals_matches_alphabet.end(),
-                    [&rle_codes](rle::instruction it)
+        rle_instructions.reserve(literals_matches_alphabet.size() + offsets_alphabet.size());
+
+        auto rle_instruction_handler = [&rle_codes, &rle_instructions](rle::instruction it)
+        {
+            rle_instructions.emplace_back(it.symbol, 1);
+
+            if (it.count == 0)
+            {
+                rle_codes[it.symbol]++;
+            } else if (it.symbol == 0)
+            {
+                const size_t grand_repeats   = it.count / 138;
+                const size_t grand_remainder = it.count % 138;
+
+                rle_codes[18] += grand_repeats;
+                for (size_t i = 0; i < grand_repeats; i++)
+                {
+                    rle_instructions.emplace_back(18, 138);
+                }
+
+                if (grand_remainder >= 11)
+                {
+                    rle_codes[18]++;
+                    rle_instructions.emplace_back(18, grand_remainder);
+                } else
+                {
+                    const size_t repeats   = grand_remainder / 10;
+                    const size_t remainder = grand_remainder % 10;
+
+                    rle_codes[17] += repeats;
+                    for (size_t i = 0; i < repeats; i++)
                     {
-                        if (it.symbol == 0)
+                        rle_instructions.emplace_back(17, 10);
+                    }
+
+                    if (remainder >= 3)
+                    {
+                        rle_codes[17]++;
+                        rle_instructions.emplace_back(17, remainder);
+                    } else
+                    {
+                        rle_codes[it.symbol] += remainder;
+                        if (remainder)
                         {
-                            const size_t grand_repeats   = it.count / 138;
-                            const size_t grand_remainder = it.count % 138;
-
-                            rle_codes[18] += grand_repeats;
-
-                            if (grand_remainder >= 11)
-                            {
-                                rle_codes[18]++;
-                            } else
-                            {
-                                const size_t repeats   = grand_remainder / 10;
-                                const size_t remainder = grand_remainder % 10;
-
-                                rle_codes[17] += repeats;
-
-                                if (remainder >= 3)
-                                {
-                                    rle_codes[17]++;
-                                } else
-                                {
-                                    rle_codes[it.symbol] += remainder;
-                                }
-                            }
-                        } else
-                        {
-                            const size_t repeats   = it.count / 6;
-                            const size_t remainder = it.count % 6;
-
-                            rle_codes[16] += repeats;
-
-                            if (remainder >= 3)
-                            {
-                                rle_codes[16]++;
-                            } else
-                            {
-                                rle_codes[it.symbol] += remainder;
-                            }
+                            rle_instructions.emplace_back(it.symbol, remainder);
                         }
-                    },
-                    [](huff::code it) -> uint8_t
+                    }
+                }
+            } else
+            {
+                const size_t repeats   = it.count / 6;
+                const size_t remainder = it.count % 6;
+
+                rle_codes[16] += repeats;
+
+                for (size_t i = 0; i < repeats; i++)
+                {
+                    rle_instructions.emplace_back(16, 6);
+                }
+
+                if (remainder >= 3)
+                {
+                    rle_codes[16]++;
+                    rle_instructions.emplace_back(16, remainder);
+                } else
+                {
+                    rle_codes[it.symbol] += remainder;
+                    if (remainder)
                     {
-                        return it.code_length;
-                    });
+                        rle_instructions.emplace_back(it.symbol, remainder);
+                    }
+                }
+            }
+        };
+
+        rle::run(literals_matches_alphabet.begin(),
+                 literals_matches_alphabet.end(),
+                 rle_instruction_handler,
+                 [](huff::code it) -> uint8_t
+                 { return it.code_length; });
+
+        rle::run(offsets_alphabet.begin(),
+                 offsets_alphabet.end(),
+                 rle_instruction_handler,
+                 [](huff::code it) -> uint8_t
+                 { return it.code_length; });
 
         huff::build_huffman_alphabet<RLE_ALPHABET>(rle_codes, rle_alphabet);
+
+        for (auto &it: rle_instructions)
+        {
+            const auto code = rle_alphabet[it.first];
+            bits_written += code.code_length * it.second;
+        }
 
         return (bits_written / 8) + (bits_written % 8 ? 1 : 0);
     }
