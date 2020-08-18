@@ -7,6 +7,7 @@
 #include "histogram.hpp"
 #include "unpacking.hpp"
 #include "rle_coding.hpp"
+#include "bit_stream.hpp"
 #include "util.hpp"
 
 namespace dpp
@@ -103,24 +104,7 @@ namespace dpp
         auto offsets_unpacked       = unpack_offsets_table(offsets_alphabet);
 
         // Encode the text
-        uint64_t bits_written = 17;
-
-        internal::deflate_pass(src_begin,
-                               src_end,
-                               [&](histogram_t::match_t match)
-                               {
-                                   const auto match_code_length  = match_lengths_unpacked[match.length - 3].code_length;
-                                   const auto offset_code_length = offsets_unpacked[match.offset].code_length;
-
-                                   bits_written += match_code_length + offset_code_length;
-                               },
-                               [&](uint8_t literal)
-                               {
-                                   const auto code_length = literals_matches_alphabet[literal].code_length;
-
-                                   bits_written += code_length;
-                               });
-
+        uint64_t                                 bits_written = 17;
         std::array<int16_t, RLE_ALPHABET>        rle_codes{};
         std::array<huff::code, RLE_ALPHABET>     rle_alphabet{};
         std::vector<std::pair<uint8_t, uint8_t>> rle_instructions;
@@ -214,13 +198,61 @@ namespace dpp
 
         huff::build_huffman_alphabet<RLE_ALPHABET>(rle_codes, rle_alphabet);
 
+        // Write header
+        bit_stream stream(dst_begin);
+
+        // Block final
+        stream.write((uint8_t) 1, 1);
+
+        // Block dynamic
+        stream.write((uint8_t) 2, 2);
+
+        // Write HLIT, HDIST, HCLEN
+        stream.write((uint8_t) (literals_matches_alphabet.size() - 257), 5);
+        stream.write((uint8_t) (offsets_alphabet.size() - 1), 5);
+        stream.write((uint8_t) (rle_alphabet.size() - 4), 4);
+
+        constexpr std::array<uint8_t, RLE_ALPHABET> rle_lengths_indices = {
+                16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
+        };
+
+        for (auto it: rle_lengths_indices)
+        {
+            stream.write(rle_alphabet[it].code_length, 3);
+        }
+
         for (auto &it: rle_instructions)
         {
             const auto code = rle_alphabet[it.first];
-            bits_written += code.code_length * it.second;
+
+            for (size_t i = 0; i < it.second; i++)
+            {
+                stream.write(code.code, code.code_length);
+            }
         }
 
-        return (bits_written / 8) + (bits_written % 8 ? 1 : 0);
+        internal::deflate_pass(src_begin,
+                               src_end,
+                               [&](histogram_t::match_t match)
+                               {
+                                   const auto match_code  = match_lengths_unpacked[match.length - 3];
+                                   const auto offset_code = offsets_unpacked[match.offset];
+
+                                   stream.write(match_code.code, match_code.code_length);
+                                   stream.write(offset_code.code, offset_code.code_length);
+                               },
+                               [&](uint8_t literal)
+                               {
+                                   const auto code = literals_matches_alphabet[literal];
+
+                                   stream.write(code.code, code.code_length);
+                               });
+
+        // Write EOB
+        stream.write(literals_matches_alphabet[256].code, literals_matches_alphabet[256].code_length);
+        stream.flush();
+
+        return stream.get_written_bytes();
     }
 }
 

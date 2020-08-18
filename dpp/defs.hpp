@@ -32,7 +32,7 @@ namespace dpp
     {
         struct code
         {
-            uint16_t code;
+            uint32_t code;
             uint8_t  code_length;
 
             bool operator==(const huff::code &rhs) const

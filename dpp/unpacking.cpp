@@ -38,7 +38,7 @@ namespace dpp
                     const uint16_t code            = alphabet[current_base].code;
                     const uint16_t code_length     = alphabet[current_base].code_length;
                     const uint8_t  reversed_bits   = util::reverse_t(current_bits) >> (8u - actual_bit_length);
-                    const uint16_t new_code        = code | static_cast<uint16_t>(reversed_bits << code_length);
+                    const uint32_t new_code        = code | static_cast<uint32_t>(reversed_bits << code_length);
                     const uint8_t  new_code_length = code_length + actual_bit_length;
 
                     result[current_length - 3] = {new_code, new_code_length};
@@ -90,7 +90,7 @@ namespace dpp
                     const uint16_t code            = alphabet[current_base].code;
                     const uint16_t code_length     = alphabet[current_base].code_length;
                     const uint8_t  reversed_bits   = util::reverse_t(current_bits) >> (16u - actual_bit_length);
-                    const uint16_t new_code        = code | static_cast<uint16_t>(reversed_bits << code_length);
+                    const uint32_t new_code        = code | static_cast<uint32_t>(reversed_bits << code_length);
                     const uint8_t  new_code_length = code_length + actual_bit_length;
 
                     result[current_offset] = {new_code, new_code_length};

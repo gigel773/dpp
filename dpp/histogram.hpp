@@ -15,7 +15,10 @@ namespace dpp
             int32_t offset;
         };
 
-        constexpr histogram_t() = default;
+        constexpr histogram_t()
+        {
+            literals_matches_histogram_[256] = 1;
+        }
 
         void update(const match_t &match) noexcept
         {
