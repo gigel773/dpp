@@ -24,8 +24,13 @@ namespace dpp
             // Empty constructor
         }
 
-        void write(uint8_t bits, uint8_t bit_count)
+        void write(uint8_t bits, uint8_t bit_count, bool inverse = false)
         {
+            if (inverse)
+            {
+                bits = util::reverse_t(bits) >> (8u - bit_count);
+            }
+
             const uint8_t bit_difference = bit_count - bits_left_;
 
             if (bit_count < bits_left_)
@@ -57,8 +62,13 @@ namespace dpp
             }
         }
 
-        void write(uint16_t bits, uint8_t bit_count)
+        void write(uint16_t bits, uint8_t bit_count, bool inverse = false)
         {
+            if (inverse)
+            {
+                bits = util::reverse_t(bits) >> (16u - bit_count);
+            }
+
             const size_t full_bytes = bit_count / 8;
             const size_t last_bits  = bit_count % 8;
             const auto   *ptr       = reinterpret_cast<uint8_t *>(&bits);
@@ -72,8 +82,13 @@ namespace dpp
             bit_stream::write(*ptr, last_bits);
         }
 
-        void write(uint32_t bits, uint8_t bit_count)
+        void write(uint32_t bits, uint8_t bit_count, bool inverse = false)
         {
+            if (inverse)
+            {
+                bits = util::reverse_t(bits) >> (32u - bit_count);
+            }
+
             const size_t full_words = bit_count / 16;
             const size_t last_bits  = bit_count % 16;
             const auto   *ptr       = reinterpret_cast<uint16_t *>(&bits);

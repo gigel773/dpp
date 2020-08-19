@@ -34,14 +34,14 @@ namespace dpp::util
         return result;
     }
 
-    auto reverse_t(uint8_t byte) -> uint8_t
+    static inline auto reverse_t(uint8_t byte) -> uint8_t
     {
         static constexpr const auto table = build_reverse_table();
 
         return table[byte];
     }
 
-    auto reverse_t(uint16_t value) -> uint16_t
+    static inline auto reverse_t(uint16_t value) -> uint16_t
     {
         uint8_t result[2];
         auto    *result_ptr = reinterpret_cast<uint16_t *>(result);
@@ -52,6 +52,24 @@ namespace dpp::util
         result[1] = reverse_t(result[1]);
 
         std::swap(result[0], result[1]);
+
+        return *result_ptr;
+    }
+
+    static inline auto reverse_t(uint32_t value) -> uint32_t
+    {
+        uint8_t result[4];
+        auto    *result_ptr = reinterpret_cast<uint32_t *>(result);
+
+        *(result_ptr) = value;
+
+        result[0] = reverse_t(result[0]);
+        result[1] = reverse_t(result[1]);
+        result[2] = reverse_t(result[2]);
+        result[3] = reverse_t(result[3]);
+
+        std::swap(result[0], result[3]);
+        std::swap(result[2], result[1]);
 
         return *result_ptr;
     }

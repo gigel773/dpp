@@ -1,19 +1,7 @@
-#include <array>
-#include <vector>
-#include <algorithm>
-#include <numeric>
-
 #include "huffman_coding.hpp"
 
 namespace dpp::huff
 {
-    struct tree_node_t
-    {
-        int32_t frequency;
-        int16_t left_child;
-        int16_t right_child;
-    };
-
     struct package_node_t
     {
         constexpr package_node_t() = default;

@@ -2,6 +2,7 @@
 #define DPP_DEFLATE_PASS_HPP
 
 #include "defs.hpp"
+#include "bit_manipulation.hpp"
 #include "huffman_coding.hpp"
 #include "hash_table.hpp"
 #include "histogram.hpp"
@@ -151,9 +152,9 @@ namespace dpp
                     } else
                     {
                         rle_codes[it.symbol] += remainder;
-                        if (remainder)
+                        for (size_t i = 0; i < remainder; i++)
                         {
-                            rle_instructions.emplace_back(it.symbol, remainder);
+                            rle_instructions.emplace_back(it.symbol, 1);
                         }
                     }
                 }
@@ -176,9 +177,9 @@ namespace dpp
                 } else
                 {
                     rle_codes[it.symbol] += remainder;
-                    if (remainder)
+                    for (size_t i = 0; i < remainder; i++)
                     {
-                        rle_instructions.emplace_back(it.symbol, remainder);
+                        rle_instructions.emplace_back(it.symbol, 1);
                     }
                 }
             }
@@ -224,10 +225,21 @@ namespace dpp
         for (auto &it: rle_instructions)
         {
             const auto code = rle_alphabet[it.first];
+            stream.write(code.code, code.code_length, true);
 
-            for (size_t i = 0; i < it.second; i++)
+            switch (it.first)
             {
-                stream.write(code.code, code.code_length);
+                case 16:
+                    stream.write(static_cast<uint8_t>(it.second - 3), 2);
+                    break;
+                case 17:
+                    stream.write(static_cast<uint8_t>(it.second - 3), 3);
+                    break;
+                case 18:
+                    stream.write(static_cast<uint8_t>(it.second - 11), 7);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -245,7 +257,7 @@ namespace dpp
                                {
                                    const auto code = literals_matches_alphabet[literal];
 
-                                   stream.write(code.code, code.code_length);
+                                   stream.write(code.code, code.code_length, true);
                                });
 
         // Write EOB

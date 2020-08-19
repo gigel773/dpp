@@ -43,7 +43,7 @@ namespace dpp::rle
             } else
             {
                 instruction_handler(instruction(accessor(*cur_symbol), element_count));
-                element_count = 1;
+                element_count = 0;
             }
 
             cur_symbol++;
